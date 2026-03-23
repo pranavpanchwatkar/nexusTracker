@@ -26,7 +26,7 @@ export default function CsvUpload() {
           name="csvFile" 
           accept=".csv" 
           required
-          className="bg-neutral-950 border border-neutral-800 text-neutral-300 rounded-xl px-0 py-0 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-800 file:text-white hover:file:bg-neutral-700 hover:file:cursor-pointer file:transition-colors w-full cursor-pointer"
+          className="bg-neutral-950 border border-neutral-800 text-neutral-400 rounded-xl px-0 py-0 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-neutral-200 dark:file:bg-neutral-800 file:text-neutral-700 dark:file:text-white hover:file:bg-neutral-300 dark:hover:file:bg-neutral-700 hover:file:cursor-pointer file:transition-colors w-full cursor-pointer shadow-sm"
         />
         <button 
           disabled={isPending}

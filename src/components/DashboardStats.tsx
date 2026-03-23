@@ -3,23 +3,110 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
 import { TrendingUp, Users, Award } from 'lucide-react';
 
-export default function DashboardStats({ submissions, processedData }: { submissions: any[], processedData: any[] }) {
+export default function DashboardStats({ submissions, processedData, activeTeams = [] }: { submissions: any[], processedData: any[], activeTeams?: any[] }) {
   // Aggregate data by Team
   const teamStats: Record<string, any> = {};
-  
-  submissions.forEach(sub => {
-    if (!teamStats[sub.teamName]) {
-      teamStats[sub.teamName] = { teamName: sub.teamName, approached: 0, paid: 0 };
+  const collegeToPromoterMap: Record<string, string> = {};
+  const canonicalCollegeMap: Record<string, string> = {}; // Used to merge duplicate variations together
+
+  // Strip acronyms in brackets, strip trailing Cities after commas, then strip spaces
+  const normalize = (str: string) => {
+    return (str || '')
+      .toLowerCase()
+      .replace(/\(.*?\)/g, '')  // Remove (NIT), (YCCE), etc.
+      .replace(/,.*$/g, '')     // Remove ", Nagpur", etc.
+      .replace(/[^a-z0-9]/g, ''); // Convert to pure alphanumeric string
+  };
+
+  // Track valid active teams
+  const activeTeamNames = new Set(activeTeams.filter(t => t.role === 'coordinator').map(t => t.teamName));
+
+  // Pre-load officially allotted colleges
+  activeTeams.forEach(team => {
+    if (team.role === 'coordinator') {
+      teamStats[team.teamName] = { teamName: team.teamName, approached: 0, paid: 0 };
+
+      if (team.allottedColleges && team.allottedColleges.length > 0) {
+        team.allottedColleges.forEach((c: string) => {
+          const norm = normalize(c);
+          if (norm.length < 10) return; // Skip short/city-only entries
+          collegeToPromoterMap[norm] = team.teamName;
+          canonicalCollegeMap[norm] = c;
+        });
+      }
     }
-    teamStats[sub.teamName].approached += sub.approachedCount;
   });
 
+  // 1. Tally approach counts & fallback mapping
+  submissions.forEach(sub => {
+    const teamName = activeTeamNames.has(sub.teamName) ? sub.teamName : 'Unassigned/Organic';
+    if (!teamStats[teamName]) {
+      teamStats[teamName] = { teamName: teamName, approached: 0, paid: 0 };
+    }
+    teamStats[teamName].approached += sub.approachedCount;
+    collegeToPromoterMap[normalize(sub.collegeName)] = teamName;
+  });
+
+  // Process Unstop rows: Evaluate Teams AND Generate deduplicated College Table Data
+  const collegeStats: Record<string, any> = {};
+  const seenNormals: Record<string, string> = {}; // Memory for Organic variations
+
   processedData.forEach(row => {
-    if (row.paymentStatus?.toLowerCase() === 'paid') {
-      if (!teamStats[row.teamId]) {
-         teamStats[row.teamId] = { teamName: row.teamId, approached: 0, paid: 0 };
+    const rawRowCollege = row.collegeName || 'Unknown';
+    const normCollege = normalize(rawRowCollege);
+
+    // Find canonical grouping string for deduplication
+    let canonicalCollege = rawRowCollege;
+    let foundCanonical = false;
+
+    // 1. Is it matching an official team's beautifully typed string?
+    for (const [normAllotted, cleanlySpelled] of Object.entries(canonicalCollegeMap)) {
+      if (normCollege.includes(normAllotted) || normAllotted.includes(normCollege)) {
+        canonicalCollege = cleanlySpelled; // Merge into the clean version!
+        foundCanonical = true;
+        break;
       }
-      teamStats[row.teamId].paid += 1;
+    }
+
+    // 2. If it is Organic (NOT allotted), merge its spelling to the FIRST time we saw this specific organic variation!
+    if (!foundCanonical) {
+      if (seenNormals[normCollege]) {
+        canonicalCollege = seenNormals[normCollege]; // Collapse onto the earliest encountered raw string 
+      } else {
+        seenNormals[normCollege] = rawRowCollege; // Register it exactly as it appeared this first time
+      }
+    }
+
+    // Accumulate total registrations for this cleanly-spelled college
+    if (!collegeStats[canonicalCollege]) {
+      collegeStats[canonicalCollege] = { collegeName: canonicalCollege, totalTeams: 0, paidTeams: 0 };
+    }
+    collegeStats[canonicalCollege].totalTeams += 1;
+
+    // Evaluate Team & Paid Stats
+    if (row.paymentStatus?.toLowerCase() === 'paid') {
+      collegeStats[canonicalCollege].paidTeams += 1; // Add to college paid counter
+
+      let promoterTeam = collegeToPromoterMap[normCollege];
+
+      // If exact string doesn't match, do fuzzy verify for team attribution
+      if (!promoterTeam) {
+        for (const [allottedCollege, assignedTeam] of Object.entries(collegeToPromoterMap)) {
+          if (normCollege.includes(allottedCollege) || allottedCollege.includes(normCollege)) {
+            promoterTeam = assignedTeam;
+            break;
+          }
+        }
+      }
+
+      if (!promoterTeam || !activeTeamNames.has(promoterTeam)) {
+        promoterTeam = 'Unassigned/Organic';
+      }
+
+      if (!teamStats[promoterTeam]) {
+        teamStats[promoterTeam] = { teamName: promoterTeam, approached: 0, paid: 0 };
+      }
+      teamStats[promoterTeam].paid += 1;
     }
   });
 
@@ -28,18 +115,6 @@ export default function DashboardStats({ submissions, processedData }: { submiss
     conversionNum: t.approached > 0 ? (t.paid / t.approached) * 100 : 0,
     conversionText: t.approached > 0 ? ((t.paid / t.approached) * 100).toFixed(1) + '%' : '0%'
   })).sort((a, b) => b.paid - a.paid);
-
-  // College Stats
-  const collegeStats: Record<string, any> = {};
-  processedData.forEach(row => {
-    if (!collegeStats[row.collegeName]) {
-      collegeStats[row.collegeName] = { collegeName: row.collegeName, totalTeams: 0, paidTeams: 0 };
-    }
-    collegeStats[row.collegeName].totalTeams += 1;
-    if (row.paymentStatus?.toLowerCase() === 'paid') {
-      collegeStats[row.collegeName].paidTeams += 1;
-    }
-  });
 
   const collegeData = Object.values(collegeStats).map(c => ({
     ...c,
@@ -54,14 +129,14 @@ export default function DashboardStats({ submissions, processedData }: { submiss
       {/* High Level Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-800 rounded-2xl p-6 flex items-center gap-4 shadow-lg">
-          <div className="p-4 bg-orange-500/10 text-orange-500 rounded-2xl"><Users size={28}/></div>
+          <div className="p-4 bg-orange-500/10 text-orange-500 rounded-2xl"><Users size={28} /></div>
           <div>
             <p className="text-neutral-400 text-sm font-medium">Total Approached</p>
             <h4 className="text-3xl font-bold text-white">{totalApproached}</h4>
           </div>
         </div>
         <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-800 rounded-2xl p-6 flex items-center gap-4 shadow-lg">
-          <div className="p-4 bg-green-500/10 text-green-500 rounded-2xl"><Award size={28}/></div>
+          <div className="p-4 bg-green-500/10 text-green-500 rounded-2xl"><Award size={28} /></div>
           <div>
             <p className="text-neutral-400 text-sm font-medium">Total Paid Conversions</p>
             <h4 className="text-3xl font-bold text-white">{totalPaid}</h4>
@@ -71,15 +146,15 @@ export default function DashboardStats({ submissions, processedData }: { submiss
 
       {/* Bar Chart */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-xl">
-        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><TrendingUp size={20} className="text-blue-500"/> Team Performance (Paid)</h3>
-        <div className="h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={teamData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><TrendingUp size={20} className="text-blue-500" /> Team Performance (Paid)</h3>
+        <div className="w-full overflow-hidden" style={{ minWidth: 0 }}>
+          <ResponsiveContainer width="100%" height={288} minWidth={0}>
+            <BarChart data={teamData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
-              <XAxis dataKey="teamName" stroke="#737373" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#737373" fontSize={12} tickLine={false} axisLine={false} />
-              <Tooltip 
-                cursor={{fill: '#262626'}}
+              <XAxis dataKey="teamName" stroke="#737373" fontSize={11} tickLine={false} axisLine={false} />
+              <YAxis stroke="#737373" fontSize={11} tickLine={false} axisLine={false} />
+              <Tooltip
+                cursor={{ fill: '#262626' }}
                 contentStyle={{ backgroundColor: '#171717', border: '1px solid #404040', borderRadius: '12px', color: '#fff' }}
               />
               <Bar dataKey="paid" radius={[4, 4, 0, 0]}>
@@ -112,8 +187,8 @@ export default function DashboardStats({ submissions, processedData }: { submiss
                 {teamData.map((t, idx) => (
                   <tr key={idx} className="hover:bg-neutral-800/50 transition-colors">
                     <td className="px-5 py-4 font-medium flex items-center gap-2">
-                       {idx === 0 && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
-                       {t.teamName}
+                      {idx === 0 && t.paid > 0 && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
+                      {t.teamName}
                     </td>
                     <td className="px-5 py-4 text-right text-neutral-400">{t.approached}</td>
                     <td className="px-5 py-4 text-right font-semibold text-green-400">{t.paid}</td>
@@ -133,7 +208,7 @@ export default function DashboardStats({ submissions, processedData }: { submiss
         </div>
 
         {/* College Table */}
-         <div className="bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl shadow-xl overflow-hidden">
           <div className="p-5 border-b border-neutral-800">
             <h3 className="text-lg font-bold text-white">College Conversions</h3>
           </div>
@@ -156,7 +231,7 @@ export default function DashboardStats({ submissions, processedData }: { submiss
                     <td className="px-5 py-4 text-right text-blue-400 font-medium">{c.conversionText}</td>
                   </tr>
                 ))}
-                 {collegeData.length === 0 && (
+                {collegeData.length === 0 && (
                   <tr><td colSpan={4} className="px-5 py-8 text-center text-neutral-500">No data available</td></tr>
                 )}
               </tbody>

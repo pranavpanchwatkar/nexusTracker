@@ -10,7 +10,7 @@ export default function ActivityFeed({ feed }: { feed: any[] }) {
   }
 
   return (
-    <div className="space-y-4 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
+    <div className="space-y-4 max-h-[800px] overflow-y-auto overflow-x-hidden custom-scrollbar">
       {feed.map((item, idx) => (
         <div key={idx} className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 flex gap-4 hover:border-neutral-700 transition-colors shadow-lg">
           <div className="w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-neutral-950/50 border border-neutral-800">

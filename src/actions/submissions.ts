@@ -5,6 +5,7 @@ import { getSession } from '@/lib/session';
 import dbConnect from '@/lib/db';
 import { Submission } from '@/lib/models';
 import crypto from 'crypto';
+import { revalidatePath } from 'next/cache';
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -41,7 +42,8 @@ export async function createSubmission(prevState: any, formData: FormData) {
         Body: buffer,
         ContentType: image.type,
       }));
-      imageUrl = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+      // Use internal proxy route to display images from private buckets
+      imageUrl = `/api/image?key=${encodeURIComponent(fileName)}`;
     } else {
       imageUrl = `https://dummyimage.com/600x400/262626/ffffff&text=${encodeURIComponent(fileName)}`;
     }
@@ -54,6 +56,8 @@ export async function createSubmission(prevState: any, formData: FormData) {
       imageUrl
     });
 
+    revalidatePath('/admin');
+    revalidatePath('/coordinator');
     return { success: true, submission: JSON.parse(JSON.stringify(sub)) };
   } catch (error: any) {
     console.error("S3/Mongo Error Details:", error);

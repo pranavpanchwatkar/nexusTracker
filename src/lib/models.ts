@@ -4,9 +4,10 @@ const UserSchema = new Schema({
   teamName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }, // hashed
-  role: { type: String, enum: ['coordinator', 'admin', 'viewer'], default: 'coordinator' }
-});
-export const User = models.User || model('User', UserSchema);
+  role: { type: String, enum: ['coordinator', 'admin', 'viewer'], default: 'coordinator' },
+  allottedColleges: { type: [String], default: [] }
+}, { strict: false });
+const User = models.User || model('User', UserSchema);
 
 const SubmissionSchema = new Schema({
   teamName: { type: String, required: true },
@@ -15,11 +16,20 @@ const SubmissionSchema = new Schema({
   imageUrl: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
 });
-export const Submission = models.Submission || model('Submission', SubmissionSchema);
+const Submission = models.Submission || model('Submission', SubmissionSchema);
 
 const ProcessedDataSchema = new Schema({
   teamId: { type: String, required: true },
   collegeName: { type: String, required: true },
   paymentStatus: { type: String, required: true },
 });
-export const ProcessedData = models.ProcessedData || model('ProcessedData', ProcessedDataSchema);
+const ProcessedData = models.ProcessedData || model('ProcessedData', ProcessedDataSchema);
+
+const FeedbackSchema = new Schema({
+  email: { type: String, required: true },
+  message: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now }
+});
+const Feedback = models.Feedback || model('Feedback', FeedbackSchema);
+
+export { User, Submission, ProcessedData, Feedback };

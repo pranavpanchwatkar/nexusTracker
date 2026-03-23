@@ -4,6 +4,7 @@ import { getSession } from '@/lib/session';
 import dbConnect from '@/lib/db';
 import { Submission, ProcessedData } from '@/lib/models';
 import Papa from 'papaparse';
+import { revalidatePath } from 'next/cache';
 
 export async function uploadCSVAction(prevState: any, formData: FormData) {
   const session = await getSession();
@@ -17,15 +18,24 @@ export async function uploadCSVAction(prevState: any, formData: FormData) {
   try {
     const text = await file.text();
     const result = Papa.parse(text, { header: true, skipEmptyLines: true });
-    
-    // We expect headers: Role, Team ID, College Name, Payment Status
     const records: any[] = result.data;
     
+    // Helper to find a dynamic column name
+    const findValue = (row: any, keywords: string[]) => {
+      const key = Object.keys(row).find(k => 
+        keywords.some(kw => k.toLowerCase().includes(kw))
+      );
+      return key ? row[key] : null;
+    };
+
     const validData = records
-      .filter((row) => (row.Role || row.role)?.toString().toLowerCase() === 'leader')
+      .filter((row) => {
+        const role = row['Candidate role'] || row.Role || row.role;
+        return role && role.toString().toLowerCase().includes('leader');
+      })
       .map((row) => ({
         teamId: row['Team ID'] || row.teamId || row.Team || 'Unknown',
-        collegeName: row['College Name'] || row.collegeName || row['Institute Name'] || row.College || 'Unknown',
+        collegeName: row["Candidate's Organisation"] || row['College Name'] || row.collegeName || row['Institute Name'] || row.College || 'Unknown',
         paymentStatus: row['Payment Status'] || row.paymentStatus || row.Payment || 'Pending',
       }));
 
@@ -39,6 +49,7 @@ export async function uploadCSVAction(prevState: any, formData: FormData) {
     await ProcessedData.deleteMany({});
     await ProcessedData.insertMany(validData);
 
+    revalidatePath('/admin');
     return { success: true, count: validData.length };
   } catch (error: any) {
     console.error(error);
