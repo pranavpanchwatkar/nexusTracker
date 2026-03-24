@@ -6,10 +6,16 @@ import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const key = searchParams.get('key');
   const session = await getSession();
-  if (!session || session.role !== 'admin') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // Protect with EITHER a secret key OR an admin session
+  const IS_AUTHORIZED = key === 'nexus_seed_2026' || (session && session.role === 'admin');
+
+  if (!IS_AUTHORIZED) {
+    return NextResponse.json({ error: 'Unauthorized. Provide valid ?key=... or login as admin.' }, { status: 401 });
   }
 
   await dbConnect();
