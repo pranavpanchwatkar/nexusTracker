@@ -58,6 +58,11 @@ export async function uploadCSVAction(prevState: any, formData: FormData) {
 }
 
 export async function getDashboardStats() {
+  const session = await getSession();
+  if (!session || (session.role !== 'admin' && session.role !== 'viewer')) {
+    throw new Error('Unauthorized');
+  }
+
   await dbConnect();
   
   const submissions = await Submission.find({}).lean();
@@ -71,6 +76,11 @@ export async function getDashboardStats() {
 }
 
 export async function getFeed() {
+  const session = await getSession();
+  if (!session || (session.role !== 'admin' && session.role !== 'viewer')) {
+    throw new Error('Unauthorized');
+  }
+
   await dbConnect();
   const feed = await Submission.find({}).sort({ timestamp: -1 }).limit(50).lean();
   return JSON.parse(JSON.stringify(feed));

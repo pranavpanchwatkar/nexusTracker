@@ -2,10 +2,16 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import { User } from '@/lib/models';
 import bcrypt from 'bcryptjs';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const session = await getSession();
+  if (!session || session.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   await dbConnect();
 
   try {

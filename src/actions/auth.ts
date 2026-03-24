@@ -64,3 +64,47 @@ export async function logoutAction() {
   cookieStore.delete('token');
   redirect('/login');
 }
+
+export async function changePasswordAction(prevState: any, formData: FormData) {
+  const currentPassword = formData.get('currentPassword') as string;
+  const newPassword = formData.get('newPassword') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { error: 'Missing fields' };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: 'New passwords do not match' };
+  }
+
+  if (newPassword.length < 6) {
+    return { error: 'New password must be at least 6 characters' };
+  }
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get('token')?.value;
+  if (!token) return { error: 'Not authenticated' };
+
+  let decoded: any;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecret123');
+  } catch (err) {
+    return { error: 'Invalid session' };
+  }
+
+  await dbConnect();
+  const user = await User.findById(decoded.id);
+  if (!user) return { error: 'User not found' };
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) return { error: 'Current password is incorrect' };
+
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(newPassword, salt);
+
+  user.password = passwordHash;
+  await user.save();
+
+  return { success: 'Password updated successfully!' };
+}

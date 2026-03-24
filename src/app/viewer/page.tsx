@@ -6,6 +6,7 @@ import DashboardStats from '@/components/DashboardStats';
 import ActivityFeed from '@/components/ActivityFeed';
 import { LogOut } from 'lucide-react';
 import ThemeToggle from '@/components/ThemeToggle';
+import SettingsModal from '@/components/SettingsModal';
 
 export default async function ViewerDashboard() {
   const session = await getSession();
@@ -27,8 +28,9 @@ export default async function ViewerDashboard() {
             <p className="text-sm text-neutral-500 font-medium tracking-wide">Viewer screen</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
           <ThemeToggle />
+          <SettingsModal />
           <form action={logoutAction} className="w-full md:w-auto">
             <button className="flex items-center justify-center gap-2 hover:bg-neutral-800 text-neutral-400 font-medium py-2 px-4 rounded-xl transition-all w-full md:w-auto">
               <LogOut size={18} /> Logout

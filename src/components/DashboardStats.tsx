@@ -144,24 +144,60 @@ export default function DashboardStats({ submissions, processedData, activeTeams
         </div>
       </div>
 
-      {/* Bar Chart */}
+      {/* Team Comparison Chart: Approached vs Paid */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 shadow-xl">
-        <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2"><TrendingUp size={20} className="text-blue-500" /> Team Performance (Paid)</h3>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <TrendingUp size={20} className="text-purple-500" /> 
+            Team Activity Comparison
+          </h3>
+          <div className="flex items-center gap-4 text-xs font-medium uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-neutral-400">
+              <div className="w-3 h-3 border-2 border-purple-500 rounded-sm"></div>
+              Approached
+            </div>
+            <div className="flex items-center gap-2 text-purple-400">
+              <div className="w-3 h-3 bg-purple-500 rounded-sm"></div>
+              Paid
+            </div>
+          </div>
+        </div>
         <div className="w-full overflow-hidden" style={{ minWidth: 0 }}>
-          <ResponsiveContainer width="100%" height={288} minWidth={0}>
-            <BarChart data={teamData} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={320} minWidth={0}>
+            <BarChart data={teamData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#262626" vertical={false} />
-              <XAxis dataKey="teamName" stroke="#737373" fontSize={11} tickLine={false} axisLine={false} />
+              <XAxis 
+                dataKey="teamName" 
+                stroke="#737373" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false}
+                angle={-45}
+                textAnchor="end"
+                interval={0}
+                height={60}
+              />
               <YAxis stroke="#737373" fontSize={11} tickLine={false} axisLine={false} />
               <Tooltip
-                cursor={{ fill: '#262626' }}
+                cursor={{ fill: '#262626', opacity: 0.4 }}
                 contentStyle={{ backgroundColor: '#171717', border: '1px solid #404040', borderRadius: '12px', color: '#fff' }}
               />
-              <Bar dataKey="paid" radius={[4, 4, 0, 0]}>
-                {teamData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : '#6366f1'} />
-                ))}
-              </Bar>
+              <Bar 
+                dataKey="approached" 
+                name="Approached"
+                fill="transparent" 
+                stroke="#a855f7" 
+                strokeWidth={2}
+                radius={[4, 4, 0, 0]} 
+                barSize={24}
+              />
+              <Bar 
+                dataKey="paid" 
+                name="Paid"
+                fill="#a855f7" 
+                radius={[4, 4, 0, 0]} 
+                barSize={24}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

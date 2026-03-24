@@ -11,6 +11,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import Link from 'next/link';
 import { getFeedbacks } from '@/actions/feedback';
 import { LogOut, Users, MessageSquareText, Clock } from 'lucide-react';
+import SettingsModal from '@/components/SettingsModal';
 
 export default async function AdminDashboard() {
   const session = await getSession();
@@ -39,8 +40,9 @@ export default async function AdminDashboard() {
             <p className="text-sm text-neutral-500 font-medium tracking-wide">Admin Control Panel</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
           <ThemeToggle />
+          <SettingsModal />
           <Link
             href="/admin/teams"
             className="flex items-center justify-center gap-2 text-purple-400 hover:text-purple-300 font-medium py-2 px-4 rounded-xl transition-all border border-purple-500/30 hover:border-purple-500/60 bg-purple-500/5 hover:bg-purple-500/10 w-full md:w-auto"
