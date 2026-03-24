@@ -45,7 +45,7 @@ export default async function AdminDashboard() {
           <SettingsModal />
           <Link
             href="/admin/teams"
-            className="flex items-center justify-center gap-2 text-purple-400 hover:text-purple-300 font-medium py-2 px-4 rounded-xl transition-all border border-purple-500/30 hover:border-purple-500/60 bg-purple-500/5 hover:bg-purple-500/10 w-full md:w-auto"
+            className="flex items-center justify-center gap-2 text-purple-400 hover:text-purple-300 font-medium py-2 px-4 rounded-xl transition-all border border-purple-500/30 hover:border-purple-500/60 bg-neutral-900 hover:bg-neutral-800 w-full md:w-auto"
           >
             <Users size={16} /> Manage Teams
           </Link>
