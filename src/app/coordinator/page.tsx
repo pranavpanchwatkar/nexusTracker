@@ -14,7 +14,7 @@ export default async function CoordinatorPage() {
   }
 
   await dbConnect();
-  
+
   // Get allotted colleges for this specific user
   const userDoc = await User.findById(session.id).lean() as any;
   const allottedColleges = userDoc?.allottedColleges || [];
@@ -74,7 +74,7 @@ export default async function CoordinatorPage() {
             <div className="bg-gradient-to-br from-neutral-900 to-neutral-800 border border-neutral-800 rounded-3xl p-6 shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
               <div className="p-3 bg-blue-500/10 text-blue-500 rounded-xl w-fit mb-4"><Users size={24} /></div>
-              <p className="text-neutral-400 text-sm font-medium">Students Approached</p>
+              <p className="text-neutral-400 text-sm font-medium">Students Approached/Interested</p>
               <h4 className="text-4xl font-bold text-white mt-1">{totalApproached}</h4>
             </div>
 
@@ -99,7 +99,9 @@ export default async function CoordinatorPage() {
                       <p className="text-sm font-medium text-white truncate">{sub.collegeName}</p>
                       <div className="flex items-center gap-3 mt-2 text-xs font-semibold">
                         <span className="text-blue-400 bg-blue-500/10 px-2 py-1 rounded-md border border-blue-500/20">{sub.approachedCount} Appr.</span>
-                        <span className="text-neutral-500 flex items-center gap-1 font-medium"><Clock size={12} /> {new Date(sub.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="text-neutral-500 flex items-center gap-1 font-medium" suppressHydrationWarning>
+                          <Clock size={12} /> {new Date(sub.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata', hour12: true })}
+                        </span>
                       </div>
                     </div>
                   </div>

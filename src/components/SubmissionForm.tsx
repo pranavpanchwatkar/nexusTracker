@@ -87,14 +87,14 @@ export default function SubmissionForm({ teamName, colleges = [] }: { teamName: 
             </select>
             <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-neutral-500">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-2">Number of Students Approached</label>
+          <label className="block text-sm font-medium text-neutral-300 mb-2">Number of Students Approached/Interested</label>
           <input
             type="number"
             name="approachedCount"
@@ -122,7 +122,7 @@ export default function SubmissionForm({ teamName, colleges = [] }: { teamName: 
                 <div className="relative w-full aspect-video rounded-lg overflow-hidden">
                   <img src={preview} alt="Preview" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                    <p className="text-white font-medium flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full"><Camera size={16}/> Tap to Retake</p>
+                    <p className="text-white font-medium flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full"><Camera size={16} /> Tap to Retake</p>
                   </div>
                 </div>
               ) : (

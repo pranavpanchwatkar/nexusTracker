@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { LayoutDashboard } from 'lucide-react';
 
 export default async function PublicStatsPage() {
-  const { submissions, processedData } = await getPublicStats();
+  const { submissions, processedData, activeTeams } = await getPublicStats();
 
   return (
     <div className="min-h-screen bg-neutral-950 p-4 md:p-8 font-sans antialiased text-white">
@@ -49,6 +49,7 @@ export default async function PublicStatsPage() {
           <DashboardStats
             submissions={submissions}
             processedData={processedData}
+            activeTeams={activeTeams}
           />
         </div>
       </main>

@@ -37,7 +37,7 @@ export default function ActivityFeed({ feed }: { feed: any[] }) {
               <div className="flex justify-between items-start mb-1">
                 <h4 className="font-bold text-white text-base">{item.teamName}</h4>
                 <span className="text-xs text-neutral-500 flex items-center gap-1" suppressHydrationWarning>
-                  <Clock size={12}/> {new Date(item.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  <Clock size={12}/> {new Date(item.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata', hour12: true })}
                 </span>
               </div>
               <p className="text-sm text-neutral-400 mb-2 truncate max-w-[200px] sm:max-w-[300px]">{item.collegeName}</p>

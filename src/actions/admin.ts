@@ -2,7 +2,7 @@
 
 import { getSession } from '@/lib/session';
 import dbConnect from '@/lib/db';
-import { Submission, ProcessedData } from '@/lib/models';
+import { Submission, ProcessedData, User } from '@/lib/models';
 import Papa from 'papaparse';
 import { revalidatePath } from 'next/cache';
 
@@ -79,10 +79,12 @@ export async function getPublicStats() {
   
   const submissions = await Submission.find({}).lean();
   const processedData = await ProcessedData.find({}).lean();
+  const activeTeams = await User.find({}, 'teamName role allottedColleges').lean();
 
   return { 
     submissions: JSON.parse(JSON.stringify(submissions)), 
-    processedData: JSON.parse(JSON.stringify(processedData)) 
+    processedData: JSON.parse(JSON.stringify(processedData)),
+    activeTeams: JSON.parse(JSON.stringify(activeTeams))
   };
 }
 
