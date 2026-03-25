@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { loginAction } from '@/actions/auth';
+import Link from 'next/link';
 
 const initialState: any = {
   error: null,
@@ -17,6 +18,14 @@ export default function LoginPage() {
           <img src="/nexus-logo.png" alt="Nexus Logo" className="w-20 h-20 rounded-full object-cover shadow-xl mx-auto mb-5" />
           <h1 className="text-3xl font-bold text-white mb-2">Team Nexus</h1>
           <p className="text-neutral-400">Sign in to your account</p>
+          <div className="mt-2">
+            <Link 
+              href="/stats" 
+              className="text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors"
+            >
+              View Public Live Stats →
+            </Link>
+          </div>
         </div>
 
         <form action={formAction} className="space-y-6">

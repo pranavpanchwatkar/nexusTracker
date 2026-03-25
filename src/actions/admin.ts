@@ -68,7 +68,18 @@ export async function getDashboardStats() {
   const submissions = await Submission.find({}).lean();
   const processedData = await ProcessedData.find({}).lean();
 
-  // Convert ObjectIds to string for client-side serialization
+  return { 
+    submissions: JSON.parse(JSON.stringify(submissions)), 
+    processedData: JSON.parse(JSON.stringify(processedData)) 
+  };
+}
+
+export async function getPublicStats() {
+  await dbConnect();
+  
+  const submissions = await Submission.find({}).lean();
+  const processedData = await ProcessedData.find({}).lean();
+
   return { 
     submissions: JSON.parse(JSON.stringify(submissions)), 
     processedData: JSON.parse(JSON.stringify(processedData)) 

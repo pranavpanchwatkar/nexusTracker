@@ -19,7 +19,10 @@ export default function RootLayout({
       className="h-full"
       suppressHydrationWarning
     >
-      <body className="antialiased min-h-full flex flex-col">
+      <body 
+        className="antialiased min-h-full flex flex-col"
+        suppressHydrationWarning
+      >
         <ThemeProvider>
           <div className="flex-1 flex flex-col">
             {children}
