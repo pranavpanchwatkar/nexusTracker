@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { getPublicStats } from '@/actions/admin';
 import DashboardStats from '@/components/DashboardStats';
 import ThemeToggle from '@/components/ThemeToggle';

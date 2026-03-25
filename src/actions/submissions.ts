@@ -58,6 +58,7 @@ export async function createSubmission(prevState: any, formData: FormData) {
 
     revalidatePath('/admin');
     revalidatePath('/coordinator');
+    revalidatePath('/stats');
     return { success: true, submission: JSON.parse(JSON.stringify(sub)) };
   } catch (error: any) {
     console.error("S3/Mongo Error Details:", error);

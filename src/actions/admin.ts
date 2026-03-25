@@ -50,6 +50,7 @@ export async function uploadCSVAction(prevState: any, formData: FormData) {
     await ProcessedData.insertMany(validData);
 
     revalidatePath('/admin');
+    revalidatePath('/stats');
     return { success: true, count: validData.length };
   } catch (error: any) {
     console.error(error);
